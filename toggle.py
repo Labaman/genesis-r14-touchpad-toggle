@@ -39,7 +39,7 @@ def get_active_session():
 def session_bus(uid):
     os.seteuid(uid)
     try:
-        return dbus.bus.BusConnection(f'unix:path=/run/user/{uid}/bus')
+        return dbus.bus.BusConnection(f'unix:path=/run/user/{uid}/bus', mainloop=DBusGMainLoop())
     finally:
         os.seteuid(0)
 
@@ -55,35 +55,25 @@ def find_touchpad():
 
 
 def toggle_non_kde(bus):
-    lock = open('/var/lock/touchpad-toggle.lock', 'w')
-    try:
-        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except BlockingIOError:
+    inp = find_touchpad()
+    if not inp:
+        print('touchpad-toggle: no touchpad input device found', file=sys.stderr)
         return
 
-    try:
-        inp = find_touchpad()
-        if not inp:
-            print('touchpad-toggle: no touchpad input device found', file=sys.stderr)
-            return
+    inhibit_path = Path(f'/sys/class/input/{inp}/inhibited')
+    inhibited = inhibit_path.read_text().strip() == '1'
+    inhibit_path.write_text('0' if inhibited else '1')
 
-        inhibit_path = Path(f'/sys/class/input/{inp}/inhibited')
-        inhibited = inhibit_path.read_text().strip() == '1'
-        inhibit_path.write_text('0' if inhibited else '1')
+    icon  = 'input-touchpad-symbolic'  if inhibited else 'touchpad-disabled-symbolic'
+    label = 'Touchpad enabled'         if inhibited else 'Touchpad disabled'
 
-        icon  = 'input-touchpad-symbolic'  if inhibited else 'touchpad-disabled-symbolic'
-        label = 'Touchpad enabled'         if inhibited else 'Touchpad disabled'
-
-        notif = bus.get_object('org.freedesktop.Notifications', '/org/freedesktop/Notifications')
-        dbus.Interface(notif, 'org.freedesktop.Notifications').Notify(
-            'touchpad', dbus.UInt32(0), icon, 'Touchpad', label,
-            dbus.Array([], signature='s'),
-            dbus.Dictionary({'urgency': dbus.Byte(1)}, signature='sv'),
-            dbus.Int32(2000),
-        )
-    finally:
-        fcntl.flock(lock, fcntl.LOCK_UN)
-        lock.close()
+    notif = bus.get_object('org.freedesktop.Notifications', '/org/freedesktop/Notifications')
+    dbus.Interface(notif, 'org.freedesktop.Notifications').Notify(
+        'touchpad', dbus.UInt32(0), icon, 'Touchpad', label,
+        dbus.Array([], signature='s'),
+        dbus.Dictionary({'urgency': dbus.Byte(1)}, signature='sv'),
+        dbus.Int32(2000),
+    )
 
 
 def toggle_kde(bus):
@@ -92,9 +82,19 @@ def toggle_kde(bus):
 
 
 def do_toggle():
-    uid, desktop = get_active_session()
-    bus = session_bus(uid)
-    if desktop.lower() in ('kde', 'plasma'):
-        toggle_kde(bus)
-    else:
-        toggle_non_kde(bus)
+    lock = open('/var/lock/touchpad-toggle.lock', 'w')
+    try:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        lock.close()
+        return
+    try:
+        uid, desktop = get_active_session()
+        bus = session_bus(uid)
+        if desktop.lower() in ('kde', 'plasma'):
+            toggle_kde(bus)
+        else:
+            toggle_non_kde(bus)
+    finally:
+        fcntl.flock(lock, fcntl.LOCK_UN)
+        lock.close()

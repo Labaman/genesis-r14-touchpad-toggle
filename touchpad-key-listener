@@ -5,11 +5,22 @@ import toggle
 import evdev
 from evdev import ecodes
 
+CONF_PATH = '/etc/touchpad-toggle.conf'
+
 conf = toggle.load_conf()
+
+for key in ('KEYBOARD_EVENT', 'TOGGLE_KEY'):
+    if key not in conf:
+        sys.exit(f'touchpad-toggle: {key} not set in {CONF_PATH}')
+
 kbd = conf['KEYBOARD_EVENT']
 device_path = kbd if kbd.startswith('/') else f'/dev/input/{kbd}'
 device = evdev.InputDevice(device_path)
-key_code = ecodes.ecodes[conf['TOGGLE_KEY']]
+
+toggle_key = conf['TOGGLE_KEY']
+if toggle_key not in ecodes.ecodes:
+    sys.exit(f'touchpad-toggle: unknown key "{toggle_key}" in {CONF_PATH} — find the correct name with: sudo evtest {device_path}')
+key_code = ecodes.ecodes[toggle_key]
 
 for event in device.read_loop():
     if event.type == ecodes.EV_KEY and event.code == key_code and event.value == 1:
