@@ -5,5 +5,7 @@
 __pycache__/
 *.pyc
 
-# Arch packaging — lives in a separate AUR repo
-arch/
+# Arch build artifacts
+arch/src/
+arch/pkg/
+arch/*.pkg.tar.zst
