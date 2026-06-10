@@ -1,0 +1,11 @@
+[Unit]
+Description=Touchpad Toggle Key Listener
+After=systemd-logind.service
+
+[Service]
+ExecStart=/usr/bin/touchpad-key-listener
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

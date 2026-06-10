@@ -1,0 +1,6 @@
+#!/usr/bin/env python3
+import sys
+sys.path.insert(0, '/usr/lib/touchpad-toggle')
+import toggle
+
+toggle.do_toggle()

@@ -1,0 +1,9 @@
+.git/
+*.swp
+*.swo
+*~
+__pycache__/
+*.pyc
+
+# Arch packaging — lives in a separate AUR repo
+arch/
