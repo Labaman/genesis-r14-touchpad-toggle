@@ -10,17 +10,11 @@ provides=('touchpad-toggle')
 conflicts=('touchpad-toggle' 'touchpad-toggle-xinput')
 backup=('etc/touchpad-toggle.conf')
 install=touchpad-toggle.install
-_repo="https://raw.githubusercontent.com/Labaman/genesis-r14-touchpad-toggle/v${pkgver}"
-source=(
-    "${_repo}/touchpad-toggle"
-    "${_repo}/touchpad-key-listener"
-    "${_repo}/toggle.py"
-    "${_repo}/touchpad-toggle.service"
-    "${_repo}/touchpad-toggle.conf"
-)
-sha256sums=(SKIP SKIP SKIP SKIP SKIP)
+source=("${pkgname}-${pkgver}.tar.gz::https://github.com/Labaman/${pkgname}/archive/refs/tags/v${pkgver}.tar.gz")
+sha256sums=('SKIP')
 
 package() {
+    cd "${pkgname}-${pkgver}"
     install -Dm755 touchpad-toggle        "$pkgdir/usr/bin/touchpad-toggle"
     install -Dm755 touchpad-key-listener  "$pkgdir/usr/bin/touchpad-key-listener"
     install -Dm644 toggle.py              "$pkgdir/usr/lib/touchpad-toggle/toggle.py"
