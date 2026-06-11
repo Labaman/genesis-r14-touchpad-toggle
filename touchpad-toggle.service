@@ -7,5 +7,15 @@ ExecStart=/usr/bin/touchpad-key-listener
 Restart=always
 RestartSec=2
 
+ProtectSystem=full
+ProtectHome=read-only
+PrivateTmp=yes
+NoNewPrivileges=yes
+ReadWritePaths=/var/lock /run/user
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+RestrictNamespaces=yes
+RestrictSUIDSGID=yes
+
 [Install]
 WantedBy=multi-user.target

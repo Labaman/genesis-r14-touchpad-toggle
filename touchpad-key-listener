@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import sys
+from pathlib import Path
 sys.path.insert(0, '/usr/lib/touchpad-toggle')
 import toggle
 import evdev
@@ -7,7 +8,10 @@ from evdev import ecodes
 
 CONF_PATH = '/etc/touchpad-toggle.conf'
 
-conf = toggle.load_conf()
+try:
+    conf = toggle.load_conf()
+except OSError as e:
+    sys.exit(f'touchpad-toggle: cannot read {CONF_PATH}: {e}')
 
 for key in ('KEYBOARD_EVENT', 'TOGGLE_KEY'):
     if key not in conf:
@@ -15,7 +19,10 @@ for key in ('KEYBOARD_EVENT', 'TOGGLE_KEY'):
 
 kbd = conf['KEYBOARD_EVENT']
 device_path = kbd if kbd.startswith('/') else f'/dev/input/{kbd}'
-device = evdev.InputDevice(device_path)
+resolved = str(Path(device_path).resolve())
+if not resolved.startswith('/dev/input/'):
+    sys.exit(f'touchpad-toggle: KEYBOARD_EVENT must point to a device under /dev/input/, got: {device_path}')
+device = evdev.InputDevice(resolved)
 
 toggle_key = conf['TOGGLE_KEY']
 if toggle_key not in ecodes.ecodes:
@@ -24,4 +31,7 @@ key_code = ecodes.ecodes[toggle_key]
 
 for event in device.read_loop():
     if event.type == ecodes.EV_KEY and event.code == key_code and event.value == 1:
-        toggle.do_toggle()
+        try:
+            toggle.do_toggle()
+        except Exception as e:
+            print(f'touchpad-toggle: {e}', file=sys.stderr)
