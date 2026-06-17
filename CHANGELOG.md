@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.3] - 2026-06-17
+### Added
+- Set `PYTHONDONTWRITEBYTECODE=1` in service to prevent stale, untracked `__pycache__/*.pyc` from accumulating under read-only `/usr`
+
 ## [2.0.2] - 2026-06-11
 ### Fixed
 - Fix fd leak in `do_toggle`: single `try/finally` now guarantees `lock.close()` on any exception

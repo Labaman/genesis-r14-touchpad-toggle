@@ -1,6 +1,7 @@
 # Maintainer: Mikhail Velichko <efklid@gmail.com>
+# shellcheck disable=SC2034,SC2148,SC2154,SC2164
 pkgname=genesis-r14-touchpad-toggle
-pkgver=2.0.1
+pkgver=2.0.3
 pkgrel=1
 pkgdesc='Touchpad toggle key fix for Machcreator Genesis R14'
 url='https://github.com/Labaman/genesis-r14-touchpad-toggle'

@@ -4,6 +4,7 @@ After=systemd-logind.service
 
 [Service]
 ExecStart=/usr/bin/touchpad-key-listener
+Environment=PYTHONDONTWRITEBYTECODE=1
 Restart=always
 RestartSec=2
 
