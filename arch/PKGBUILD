@@ -21,4 +21,5 @@ package() {
     install -Dm644 toggle.py              "$pkgdir/usr/lib/touchpad-toggle/toggle.py"
     install -Dm644 touchpad-toggle.service "$pkgdir/usr/lib/systemd/system/touchpad-toggle.service"
     install -Dm644 touchpad-toggle.conf   "$pkgdir/etc/touchpad-toggle.conf"
+    install -Dm644 LICENSE                "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }
